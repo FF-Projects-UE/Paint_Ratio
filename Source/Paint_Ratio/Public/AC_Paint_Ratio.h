@@ -12,6 +12,9 @@
 
 #include "AC_Paint_Ratio.generated.h"
 
+UDELEGATE(BlueprintAuthorityOnly)
+DECLARE_DYNAMIC_DELEGATE_OneParam(FPaintRatio, double, OutRatio);
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class PAINT_RATIO_API UAC_Paint_Ratio : public UActorComponent
 {
@@ -28,29 +31,27 @@ protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 	
-	virtual void ClearRenderTarget();
+	virtual void PrepareRenderTarget();
 
-	//UFUNCTION(BlueprintCallable, meta = (DisplayName = "Get Painted Pixels", ToolTip = "Tooltip.", Keywords = "get, painted, pixel, pixels, render, target, ratio"), Category = "Window System|Export")
-	virtual void GetPaintedPixels();
+	//UFUNCTION(BlueprintCallable, meta = (DisplayName = "Record Painted Pixels", ToolTip = "Tooltip.", Keywords = "record, paint, painted, color, pixel, render, target, canvas, ratio"), Category = "Window System|Export")
+	virtual void RecordPaintedPixels();
+
+	UFUNCTION(BlueprintCallable, meta = (DisplayName = "Get Color Ratio", ToolTip = "Tooltip.", Keywords = "get, painted, pixel, pixels, color, render, target, ratio"), Category = "Window System|Export")
+	virtual void GetColorRatio(FColor WantedColor, FPaintRatio DelegatePaintRatio);
 
 	TMap<FString, FColor> Painted_Pixels;
-
+	
+	int32 Pixel_Count = 0;
 
 public:	
 
 	UPROPERTY(BlueprintReadWrite)
 	UCanvasRenderTarget2D* CRT_Drawing = nullptr;
 	
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(BlueprintReadWrite, meta = (ToolTip = "RGBA values should between 0-255"))
 	FColor AlphaColor = FColor::White;
 	
 	UPROPERTY(BlueprintReadWrite)
-	double ReadInterval = 2;
-
-	UPROPERTY(BlueprintReadOnly)
-	double OutRatio = 0;
-
-	UPROPERTY(BlueprintReadWrite)
-	bool bAllowDebugMessage = true;
+	double RecordInterval = 2;
 	
 };

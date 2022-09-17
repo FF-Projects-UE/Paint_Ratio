@@ -10,7 +10,6 @@ UAC_Paint_Ratio::UAC_Paint_Ratio()
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = false;
-
 }
 
 // Called when the game starts
@@ -19,10 +18,10 @@ void UAC_Paint_Ratio::BeginPlay()
 	Super::BeginPlay();
 
 	FTimerHandle Handle_CRT_Clear;
-	this->GetOwner()->GetWorldTimerManager().SetTimer(Handle_CRT_Clear, this, &UAC_Paint_Ratio::ClearRenderTarget, 0.2, false);
+	this->GetOwner()->GetWorldTimerManager().SetTimer(Handle_CRT_Clear, this, &UAC_Paint_Ratio::PrepareRenderTarget, 0.2, false);
 
 	FTimerHandle Handle_Timer;
-	this->GetOwner()->GetWorldTimerManager().SetTimer(Handle_Timer, this, &UAC_Paint_Ratio::GetPaintedPixels, ReadInterval, true);
+	this->GetOwner()->GetWorldTimerManager().SetTimer(Handle_Timer, this, &UAC_Paint_Ratio::RecordPaintedPixels, RecordInterval, true);
 }
 
 // Called every frame
@@ -31,12 +30,18 @@ void UAC_Paint_Ratio::TickComponent(float DeltaTime, ELevelTick TickType, FActor
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
-void UAC_Paint_Ratio::ClearRenderTarget()
+void UAC_Paint_Ratio::PrepareRenderTarget()
 {
 	UKismetRenderingLibrary::ClearRenderTarget2D(GEngine->GetCurrentPlayWorld(), CRT_Drawing);
+
+	int32 Size_X = 0;
+	int32 Size_Y = 0;
+	CRT_Drawing->GetSize(Size_X, Size_Y);
+	
+	Pixel_Count = Size_X * Size_Y;
 }
 
-void UAC_Paint_Ratio::GetPaintedPixels()
+void UAC_Paint_Ratio::RecordPaintedPixels()
 {
 	TArray<FColor> Array_Colors;
 	UKismetRenderingLibrary::ReadRenderTarget(GEngine->GetCurrentPlayWorld(), CRT_Drawing, Array_Colors, true);
@@ -47,20 +52,43 @@ void UAC_Paint_Ratio::GetPaintedPixels()
 			{
 				if (Array_Colors[Pixel_Index] == AlphaColor)
 				{
-					Painted_Pixels.Add((FString::FromInt(Pixel_Index) + "_" + FString::FromInt(AlphaColor.R) + "-" + FString::FromInt(AlphaColor.G) + "-" + FString::FromInt(AlphaColor.B) + "-" + FString::FromInt(AlphaColor.A)), Array_Colors[Pixel_Index]);
+					Painted_Pixels.Add((FString::FromInt(AlphaColor.R) + "-" + FString::FromInt(AlphaColor.G) + "-" + FString::FromInt(AlphaColor.B) + "-" + FString::FromInt(AlphaColor.A) + "_" + FString::FromInt(Pixel_Index)), Array_Colors[Pixel_Index]);
 				}
 			}
 
-			double Ratio = UKismetMathLibrary::Divide_DoubleDouble(Painted_Pixels.Num(), Array_Colors.Num());
-
-			AsyncTask(ENamedThreads::GameThread, [this, Ratio]()
+			AsyncTask(ENamedThreads::GameThread, []()
 				{
-					OutRatio = Ratio;
 
-					if (bAllowDebugMessage == true)
-					{	
-						GEngine->AddOnScreenDebugMessage(0, ReadInterval, FColor::Red, FString::SanitizeFloat(Ratio));
-					}
+				}
+			);
+		}
+	);
+}
+
+void UAC_Paint_Ratio::GetColorRatio(FColor WantedColor, FPaintRatio DelegatePaintRatio)
+{
+	TArray<FString> Array_Keys;
+	Painted_Pixels.GetKeys(Array_Keys);
+
+	AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [DelegatePaintRatio, WantedColor, Array_Keys, this]()
+		{
+			TArray<FString> Array_Wanted;
+			for (int32 KeyIndex = 0; KeyIndex < Array_Keys.Num(); KeyIndex++)
+			{
+				TArray<FString> Key_Sections;
+				Array_Keys[KeyIndex].ParseIntoArray(Key_Sections, TEXT("_"));
+
+				if (Key_Sections[0] == (FString::FromInt(WantedColor.R) + "-" + FString::FromInt(WantedColor.G) + "-" + FString::FromInt(WantedColor.B) + "-" + FString::FromInt(WantedColor.A)))
+				{
+					Array_Wanted.Add(Key_Sections[0]);
+				}
+			}
+
+			double Ratio = UKismetMathLibrary::Divide_DoubleDouble(Array_Wanted.Num(), Pixel_Count);
+
+			AsyncTask(ENamedThreads::GameThread, [DelegatePaintRatio, Ratio]()
+				{
+					DelegatePaintRatio.ExecuteIfBound(Ratio);
 				}
 			);
 		}
