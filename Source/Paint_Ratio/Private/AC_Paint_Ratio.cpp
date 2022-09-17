@@ -1,8 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "AC_Paint_Ratio.h"
 #include "GameFramework/Actor.h"
+#include "Kismet/KismetRenderingLibrary.h"
 
 // Sets default values for this component's properties
 UAC_Paint_Ratio::UAC_Paint_Ratio()
@@ -20,8 +20,8 @@ void UAC_Paint_Ratio::BeginPlay()
 	FTimerHandle Handle_Prepare;
 	this->GetOwner()->GetWorldTimerManager().SetTimer(Handle_Prepare, this, &UAC_Paint_Ratio::PrepareRenderTarget, 0.2, false);
 
-	FTimerHandle Handle_Timer;
-	this->GetOwner()->GetWorldTimerManager().SetTimer(Handle_Timer, this, &UAC_Paint_Ratio::RecordPaintedPixels, RecordInterval, true);
+	//FTimerHandle Handle_Timer;
+	//this->GetOwner()->GetWorldTimerManager().SetTimer(Handle_Timer, this, &UAC_Paint_Ratio::RecordPaintedPixels, RecordInterval, true);
 }
 
 // Called every frame
@@ -84,7 +84,7 @@ void UAC_Paint_Ratio::GetColorRatio(FColor WantedColor, FPaintRatio DelegatePain
 				}
 			}
 
-			double Ratio = UKismetMathLibrary::Divide_DoubleDouble(Array_Wanted.Num(), Pixel_Count);
+			double Ratio = Array_Wanted.Num() / Pixel_Count;
 
 			AsyncTask(ENamedThreads::GameThread, [DelegatePaintRatio, Ratio]()
 				{

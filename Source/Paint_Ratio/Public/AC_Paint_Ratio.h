@@ -4,12 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-
-#include "Kismet/KismetRenderingLibrary.h"
-#include "Kismet/KismetMathLibrary.h"
 #include "Engine/CanvasRenderTarget2D.h"
-#include "Math/Color.h"
-
 #include "AC_Paint_Ratio.generated.h"
 
 UDELEGATE(BlueprintAuthorityOnly)
@@ -27,31 +22,26 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+	UPROPERTY(BlueprintReadWrite)
+	UCanvasRenderTarget2D* CRT_Drawing = nullptr;
+
+	UPROPERTY(BlueprintReadWrite, meta = (ToolTip = "RGBA values should between 0-255"))
+	FColor AlphaColor = FColor::White;
+
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 	
 	virtual void PrepareRenderTarget();
 
-	//UFUNCTION(BlueprintCallable, meta = (DisplayName = "Record Painted Pixels", ToolTip = "Tooltip.", Keywords = "record, paint, painted, color, pixel, render, target, canvas, ratio"), Category = "Window System|Export")
+	UFUNCTION(BlueprintCallable, meta = (DisplayName = "Record Painted Pixels", ToolTip = "It records all painted pixels' index and color values. It contains all markers and color values are in FColor (0-255) format.", Keywords = "record, paint, painted, color, pixel, render, target, canvas, ratio"), Category = "Window System|Export")
 	virtual void RecordPaintedPixels();
 
-	UFUNCTION(BlueprintCallable, meta = (DisplayName = "Get Color Ratio", ToolTip = "Tooltip.", Keywords = "get, painted, pixel, pixels, color, render, target, ratio"), Category = "Window System|Export")
+	UFUNCTION(BlueprintCallable, meta = (DisplayName = "Get Color Ratio", ToolTip = "It filters and gives count of only wanted color.", Keywords = "get, painted, pixel, pixels, color, render, target, ratio"), Category = "Window System|Export")
 	virtual void GetColorRatio(FColor WantedColor, FPaintRatio DelegatePaintRatio);
 
 	TMap<FString, FColor> Painted_Pixels;
 	
-	int32 Pixel_Count = 0;
+	double Pixel_Count = 0;
 
-public:	
-
-	UPROPERTY(BlueprintReadWrite)
-	UCanvasRenderTarget2D* CRT_Drawing = nullptr;
-	
-	UPROPERTY(BlueprintReadWrite, meta = (ToolTip = "RGBA values should between 0-255"))
-	FColor AlphaColor = FColor::White;
-	
-	UPROPERTY(BlueprintReadWrite)
-	double RecordInterval = 2;
-	
 };
