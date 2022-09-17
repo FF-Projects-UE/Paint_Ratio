@@ -25,23 +25,23 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 	UCanvasRenderTarget2D* CRT_Drawing = nullptr;
 
-	UPROPERTY(BlueprintReadWrite, meta = (ToolTip = "RGBA values should between 0-255"))
-	FColor AlphaColor = FColor::White;
-
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 	
+	UFUNCTION()
 	virtual void PrepareRenderTarget();
 
-	UFUNCTION(BlueprintCallable, meta = (DisplayName = "Record Painted Pixels", ToolTip = "It records all painted pixels' index and color values. It contains all markers and color values are in FColor (0-255) format.", Keywords = "record, paint, painted, color, pixel, render, target, canvas, ratio"), Category = "Window System|Export")
-	virtual void RecordPaintedPixels();
+	UFUNCTION(BlueprintCallable, meta = (DisplayName = "Record Painted Pixels", ToolTip = "It records all painted pixels' index and color values. \"AlphaColor\" input uses FColor so, RGB-A values should be 0-255 format. There should be at least 1 second delay between \"Record\" and \"Get Ratio\" functions. Canvas render target format should use RTF RGBA8 and Address X-Y should use \"Clamp\".", Keywords = "record, paint, painted, color, pixel, render, target, canvas, ratio"), Category = "CRT Paint Ratio")
+	virtual void RecordPaintedPixels(FColor AlphaColor = FColor::White);
 
-	UFUNCTION(BlueprintCallable, meta = (DisplayName = "Get Color Ratio", ToolTip = "It filters and gives count of only wanted color.", Keywords = "get, painted, pixel, pixels, color, render, target, ratio"), Category = "Window System|Export")
-	virtual void GetColorRatio(FColor WantedColor, FPaintRatio DelegatePaintRatio);
+	UFUNCTION(BlueprintCallable, meta = (DisplayName = "Get Color Ratio", ToolTip = "It filters painted pixel map and gives only wanted color's ratio.", Keywords = "get, painted, pixel, pixels, color, render, target, ratio"), Category = "CRT Paint Ratio")
+	virtual void GetColorRatio(FPaintRatio DelegatePaintRatio, FColor WantedColor = FColor::White);
 
-	TMap<FString, FColor> Painted_Pixels;
+	UPROPERTY()
+	TMap<FString, FColor> Painted_Pixels;	// UPROPOERTY Global variable. It records whole painted pixels with all markers.
 	
-	double Pixel_Count = 0;
+	UPROPERTY()
+	double Pixel_Count = 0;					// UPROPERTY Global Variable. Pixel count of canvas render target. We use this to calculate ratio.
 
 };

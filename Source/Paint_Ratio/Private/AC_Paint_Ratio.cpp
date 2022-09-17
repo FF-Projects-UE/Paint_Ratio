@@ -20,8 +20,6 @@ void UAC_Paint_Ratio::BeginPlay()
 	FTimerHandle Handle_Prepare;
 	this->GetOwner()->GetWorldTimerManager().SetTimer(Handle_Prepare, this, &UAC_Paint_Ratio::PrepareRenderTarget, 0.2, false);
 
-	//FTimerHandle Handle_Timer;
-	//this->GetOwner()->GetWorldTimerManager().SetTimer(Handle_Timer, this, &UAC_Paint_Ratio::RecordPaintedPixels, RecordInterval, true);
 }
 
 // Called every frame
@@ -41,12 +39,12 @@ void UAC_Paint_Ratio::PrepareRenderTarget()
 	Pixel_Count = Size_X * Size_Y;
 }
 
-void UAC_Paint_Ratio::RecordPaintedPixels()
+void UAC_Paint_Ratio::RecordPaintedPixels(FColor AlphaColor)
 {
 	TArray<FColor> Array_Colors;
 	UKismetRenderingLibrary::ReadRenderTarget(GEngine->GetCurrentPlayWorld(), CRT_Drawing, Array_Colors, true);
 
-	AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [this, Array_Colors]()
+	AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [this, AlphaColor, Array_Colors]()
 		{
 			for (int32 Pixel_Index = 0; Pixel_Index < Array_Colors.Num(); Pixel_Index++)
 			{
@@ -65,7 +63,7 @@ void UAC_Paint_Ratio::RecordPaintedPixels()
 	);
 }
 
-void UAC_Paint_Ratio::GetColorRatio(FColor WantedColor, FPaintRatio DelegatePaintRatio)
+void UAC_Paint_Ratio::GetColorRatio(FPaintRatio DelegatePaintRatio, FColor WantedColor)
 {
 	TArray<FString> Array_Keys;
 	Painted_Pixels.GetKeys(Array_Keys);
