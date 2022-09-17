@@ -17,8 +17,8 @@ void UAC_Paint_Ratio::BeginPlay()
 {
 	Super::BeginPlay();
 
-	FTimerHandle Handle_CRT_Clear;
-	this->GetOwner()->GetWorldTimerManager().SetTimer(Handle_CRT_Clear, this, &UAC_Paint_Ratio::PrepareRenderTarget, 0.2, false);
+	FTimerHandle Handle_Prepare;
+	this->GetOwner()->GetWorldTimerManager().SetTimer(Handle_Prepare, this, &UAC_Paint_Ratio::PrepareRenderTarget, 0.2, false);
 
 	FTimerHandle Handle_Timer;
 	this->GetOwner()->GetWorldTimerManager().SetTimer(Handle_Timer, this, &UAC_Paint_Ratio::RecordPaintedPixels, RecordInterval, true);
