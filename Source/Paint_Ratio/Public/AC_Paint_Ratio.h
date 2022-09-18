@@ -26,13 +26,13 @@ protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 	
-	UFUNCTION(BlueprintCallable, meta = (DisplayName = "Prepare Render Target", ToolTip = "It sets canvas render target global variable, calculate its size and clear \"Painted Pixels\" variable.", Keywords = "prepare, clear, size, pixel, pixels, color, paint, painted, canvas, render, target, ratio"), Category = "CRT Paint Ratio")
+	UFUNCTION(BlueprintCallable, meta = (DisplayName = "Prepare Render Target", ToolTip = "It sets \"CRT_Drawing\" global variable, calculate its size, clear \"Painted Pixels (set type array)\" variable and its color.", Keywords = "prepare, clear, size, pixel, pixels, color, paint, painted, canvas, render, target, ratio"), Category = "CRT Paint Ratio")
 	virtual void PrepareRenderTarget(UCanvasRenderTarget2D* InCRT);
 
-	UFUNCTION(BlueprintCallable, meta = (DisplayName = "Record Painted Pixels", ToolTip = "It records all painted pixels' index and color values. \"AlphaColor\" input uses FColor so, RGB-A values should be 0-255 format. There should be at least 1 second delay between \"Record\" and \"Get Ratio\" functions. Canvas render target format should use RTF RGBA8 and Address X-Y should use \"Clamp\".", Keywords = "record, paint, painted, color, pixel, pixels, canvas, render, target, ratio"), Category = "CRT Paint Ratio")
+	UFUNCTION(BlueprintCallable, meta = (DisplayName = "Record Painted Pixels", ToolTip = "It records all painted pixels' index and color values. \"Alpha Color\" input uses FColor. So, RGB-A values should be 0-255 format. Default color is white (all 255). There should be at least 1 second delay between \"Record\" and \"Get Ratio\" functions. Canvas render target format should use RTF RGBA8 and Address X-Y should use \"Clamp\".", Keywords = "record, paint, painted, color, pixel, pixels, canvas, render, target, ratio"), Category = "CRT Paint Ratio")
 	virtual void RecordPaintedPixels(FColor AlphaColor = FColor::White);
 
-	UFUNCTION(BlueprintCallable, meta = (DisplayName = "Get Color Ratio", ToolTip = "It filters painted pixel map and gives only wanted color's ratio.", Keywords = "get, painted, pixel, pixels, color, canvas, render, target, ratio"), Category = "CRT Paint Ratio")
+	UFUNCTION(BlueprintCallable, meta = (DisplayName = "Get Color Ratio", ToolTip = "It filters painted pixel map and gives only wanted color's ratio. \"Wanted Color\" input uses FColor. So, RGB-A values should be 0-255 format. Default color is white (all 255). There should be at least 1 second delay between \"Record\" and \"Get Ratio\" functions.", Keywords = "get, painted, pixel, pixels, color, canvas, render, target, ratio"), Category = "CRT Paint Ratio")
 	virtual void GetColorRatio(FPaintRatio DelegatePaintRatio, FColor WantedColor = FColor::White);
 
 	UPROPERTY()
@@ -41,6 +41,6 @@ protected:
 	UPROPERTY()
 	double Pixel_Count = 0;							// UPROPERTY Global Variable. Pixel count of canvas render target. We use this to calculate ratio.
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly)
 	UCanvasRenderTarget2D* CRT_Drawing = nullptr;	// UPROPERTY Global Variable. Drawing canvas render target as whiteboard.
 };
