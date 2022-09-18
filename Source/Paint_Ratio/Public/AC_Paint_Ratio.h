@@ -36,11 +36,11 @@ protected:
 	virtual void GetColorRatio(FPaintRatio DelegatePaintRatio, FColor WantedColor = FColor::White);
 
 	UPROPERTY()
-	TSet<FString> Painted_Pixels;			// UPROPOERTY Global variable. It records whole painted pixels with all markers.
+	TSet<FString> Painted_Pixels;					// UPROPERTY Global variable. It records whole painted pixels with all markers.
 	
 	UPROPERTY()
-	double Pixel_Count = 0;					// UPROPERTY Global Variable. Pixel count of canvas render target. We use this to calculate ratio.
+	double Pixel_Count = 0;							// UPROPERTY Global Variable. Pixel count of canvas render target. We use this to calculate ratio.
 
 	UPROPERTY()
-	UCanvasRenderTarget2D* CRT_Drawing = nullptr;
+	UCanvasRenderTarget2D* CRT_Drawing = nullptr;	// UPROPERTY Global Variable. Drawing canvas render target as whiteboard.
 };
