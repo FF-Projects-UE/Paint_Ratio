@@ -70,12 +70,12 @@ void UAC_Paint_Ratio::RecordPaintedPixels(FColor AlphaColor)
 
 void UAC_Paint_Ratio::GetColorRatio(FPaintRatio DelegatePaintRatio, FColor WantedColor)
 {
-	TArray<FString> Array_Pixels = Painted_Pixels.Array();
-
-	AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [DelegatePaintRatio, WantedColor, Array_Pixels, this]()
+	AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [DelegatePaintRatio, WantedColor, this]()
 		{
+			TArray<FString> Array_Pixels = Painted_Pixels.Array();
+			
 			TArray<FString> Array_Wanted;
-			for (int32 KeyIndex = 0; KeyIndex < Painted_Pixels.Num(); KeyIndex++)
+			for (int32 KeyIndex = 0; KeyIndex < Array_Pixels.Num(); KeyIndex++)
 			{
 				TArray<FString> Key_Sections;
 				Array_Pixels[KeyIndex].ParseIntoArray(Key_Sections, TEXT("_"));
