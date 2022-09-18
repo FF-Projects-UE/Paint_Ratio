@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "AC_Paint_Ratio.h"
-#include "GameFramework/Actor.h"
+//#include "GameFramework/Actor.h"
 #include "Kismet/KismetRenderingLibrary.h"
 
 // Sets default values for this component's properties
@@ -17,9 +17,8 @@ void UAC_Paint_Ratio::BeginPlay()
 {
 	Super::BeginPlay();
 
-	FTimerHandle Handle_Prepare;
-	this->GetOwner()->GetWorldTimerManager().SetTimer(Handle_Prepare, this, &UAC_Paint_Ratio::PrepareRenderTarget, 0.2, false);
-
+	//FTimerHandle Handle_Prepare;
+	//this->GetOwner()->GetWorldTimerManager().SetTimer(Handle_Prepare, this, &UAC_Paint_Ratio::PrepareRenderTarget, 0.2, false);
 }
 
 // Called every frame
@@ -28,8 +27,10 @@ void UAC_Paint_Ratio::TickComponent(float DeltaTime, ELevelTick TickType, FActor
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
-void UAC_Paint_Ratio::PrepareRenderTarget()
+void UAC_Paint_Ratio::PrepareRenderTarget(UCanvasRenderTarget2D* InCRT)
 {
+	CRT_Drawing = InCRT;
+	
 	UKismetRenderingLibrary::ClearRenderTarget2D(GEngine->GetCurrentPlayWorld(), CRT_Drawing);
 
 	int32 Size_X = 0;
@@ -37,6 +38,11 @@ void UAC_Paint_Ratio::PrepareRenderTarget()
 	CRT_Drawing->GetSize(Size_X, Size_Y);
 	
 	Pixel_Count = Size_X * Size_Y;
+
+	if (Painted_Pixels.Num() > 0)
+	{
+		Painted_Pixels.Empty();
+	}
 }
 
 void UAC_Paint_Ratio::RecordPaintedPixels(FColor AlphaColor)
@@ -50,13 +56,12 @@ void UAC_Paint_Ratio::RecordPaintedPixels(FColor AlphaColor)
 			{
 				if (Array_Colors[Pixel_Index] == AlphaColor)
 				{
-					Painted_Pixels.Add((FString::FromInt(AlphaColor.R) + "-" + FString::FromInt(AlphaColor.G) + "-" + FString::FromInt(AlphaColor.B) + "-" + FString::FromInt(AlphaColor.A) + "_" + FString::FromInt(Pixel_Index)), Array_Colors[Pixel_Index]);
+					Painted_Pixels.Add((FString::FromInt(AlphaColor.R) + "-" + FString::FromInt(AlphaColor.G) + "-" + FString::FromInt(AlphaColor.B) + "-" + FString::FromInt(AlphaColor.A) + "_" + FString::FromInt(Pixel_Index)));
 				}
 			}
 
 			AsyncTask(ENamedThreads::GameThread, []()
 				{
-
 				}
 			);
 		}
@@ -65,16 +70,15 @@ void UAC_Paint_Ratio::RecordPaintedPixels(FColor AlphaColor)
 
 void UAC_Paint_Ratio::GetColorRatio(FPaintRatio DelegatePaintRatio, FColor WantedColor)
 {
-	TArray<FString> Array_Keys;
-	Painted_Pixels.GetKeys(Array_Keys);
+	TArray<FString> Array_Pixels = Painted_Pixels.Array();
 
-	AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [DelegatePaintRatio, WantedColor, Array_Keys, this]()
+	AsyncTask(ENamedThreads::AnyBackgroundThreadNormalTask, [DelegatePaintRatio, WantedColor, Array_Pixels, this]()
 		{
 			TArray<FString> Array_Wanted;
-			for (int32 KeyIndex = 0; KeyIndex < Array_Keys.Num(); KeyIndex++)
+			for (int32 KeyIndex = 0; KeyIndex < Painted_Pixels.Num(); KeyIndex++)
 			{
 				TArray<FString> Key_Sections;
-				Array_Keys[KeyIndex].ParseIntoArray(Key_Sections, TEXT("_"));
+				Array_Pixels[KeyIndex].ParseIntoArray(Key_Sections, TEXT("_"));
 
 				if (Key_Sections[0] == (FString::FromInt(WantedColor.R) + "-" + FString::FromInt(WantedColor.G) + "-" + FString::FromInt(WantedColor.B) + "-" + FString::FromInt(WantedColor.A)))
 				{
